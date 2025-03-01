@@ -1,0 +1,170 @@
+SETTINGS:
+    # number of concurrent threads
+    THREADS: 1
+
+    # number of retries for ANY action
+    ATTEMPTS: 5
+
+    # account range.
+    # BY DEFAULT: [0, 0] - all accounts
+    # [3, 5] - only 3 4 5 accounts
+    # [7, 7] - only 7 account
+    ACCOUNTS_RANGE: [0, 0]
+
+    # WORKS ONLY IF ACCOUNTS_RANGE IS [0, 0]
+    # exact accounts to use. 
+    # BY DEFAULT: [] - all accounts
+    # Example: [1, 4, 6] - bot will use only 1, 4 and 6 accounts
+    EXACT_ACCOUNTS_TO_USE: []
+
+    # pause between attempts
+    PAUSE_BETWEEN_ATTEMPTS: [5, 15]
+
+    # pause between swaps
+    PAUSE_BETWEEN_SWAPS: [10, 40]
+
+    # pause in seconds between accounts
+    RANDOM_PAUSE_BETWEEN_ACCOUNTS: [3, 15]
+
+    # pause in seconds between actions
+    RANDOM_PAUSE_BETWEEN_ACTIONS: [3, 10]
+
+    # random pause before start of every account
+    # to make sure that all accounts will be started at different times
+    RANDOM_INITIALIZATION_PAUSE: [5, 20]
+
+    # pause multiplier for browser actions
+    BROWSER_PAUSE_MULTIPLIER: 1.5
+
+# --------------------------- #
+FLOW:
+    # tasks to do.
+
+    # FAUCETS
+    # "faucet" - get tokens from faucet
+    # "farm_faucet" - get tokens from faucet ON FARM ACCOUNTS (data/keys_for_faucet.txt)
+    # "disperse_farm_accounts" - disperse tokens from farm accounts to main accounts | keys_for_faucet.txt -> private_keys.txt
+    # "disperse_from_one_wallet" - disperse tokens from one wallet to all other wallets | keys_for_faucet.txt (first wallet) -> private_keys.txt
+
+    # SWAPS
+    # "collect_all_to_monad" - swap all tokens to native token (MON)
+    # "swaps" - testnet.monad.xyz/ page token swaps
+    # "bean" - swap tokens on Bean DEX
+    # "ambient" - swap tokens on Ambient DEX
+    # "izumi" - swap tokens on Izumi DEX
+
+    # STAKES
+    # "apriori" - stake MON token
+    # "magma" - stake MON token on Magma
+    # "shmonad" - buy and stake shmon on shmonad.xyz | LOOK SETTINGS BELOW
+    # "kintsu" - stake MON token on kintsu.xyz/
+
+    # MINT
+    # "magiceden" - mint NFT on magiceden.io
+    # "accountable" - mint accountable nft
+    # "owlto" - deploy contract on Owlto
+    # "lilchogstars" - mint NFT on testnet.lilchogstars.com/
+    # "demask" - mint NFT on app.demask.finance/launchpad/0x2cdd146aa75ffa605ff7c5cc5f62d3b52c140f9c/0
+    # "monadking" - mint NFT on nerzo.xyz/monadking
+    # "monadking_unlocked" - mint NFT on www.nerzo.xyz/unlocked
+
+    # REFUEL
+    # "gaszip" - gaszip refuel from arbitrum, optimism, base to monad
+    # "orbiter" - bridge ETH from Sepolia to Monad via Orbiter
+
+    # OTHER
+    # "logs" - show logs: MON balance | number of transactions | avarage balance | avarage number of transactions
+    # "nad_domains" - register random domain on nad.domains
+    # "aircraft" - mint NFT on aircraft.fun
+    # DOES NOT WORK, WAIT FOR UPDATE -"bima" - lending
+    
+    # EXAMPLE: tasks: ["gaszip", "swaps"]
+    # RANDOM TASKS EXAMPLE:
+    # TASKS: ["swaps", ["bean", "logs"], "collect_all_to_monad"]
+    # in this case, the tasks will be executed in the following order:
+    # 1. swaps
+    # 2. bean or logs (randomly)
+    # 3. collect_all_to_monad
+    # TASKS:
+    #     [
+    #         ["lilchogstars", "demask", "monadking", "monadking_unlocked", "accountable", "owlto", "nad_domains"],
+    #         "swaps",
+    #         ["lilchogstars", "demask", "monadking", "monadking_unlocked", "accountable", "owlto", "nad_domains"],
+    #         ["apriori", "magma", "kintsu", "shmonad"],
+    #         "collect_all_to_monad",
+    #         ["lilchogstars", "demask", "monadking", "monadking_unlocked", "accountable", "owlto", "swaps"],
+    #         ["apriori", "magma", "kintsu", "shmonad"],
+    #         "logs",
+    #     ]
+    TASKS: ["izumi"]
+
+    # number of swaps. bean ambient monad etc
+    NUMBER_OF_SWAPS: [1, 3]
+
+    # percent of balance to swap
+    PERCENT_OF_BALANCE_TO_SWAP: [10, 15]
+
+
+DISPERSE:
+    # if balance of main account is LESS than this value
+    # bot will disperse tokens from farm accounts to main account
+    MIN_BALANCE_FOR_DISPERSE: [0.2, 0.5]
+
+
+APRIORI:
+    AMOUNT_TO_STAKE: [0.0001, 0.0003]
+
+MAGMA:
+    AMOUNT_TO_STAKE: [0.0001, 0.0003]
+
+KINTSU:
+    # MINIMUM IS 0.01 $MON
+    AMOUNT_TO_STAKE: [0.01, 0.02]
+
+BIMA:
+    LEND: true
+    PERCENT_OF_BALANCE_TO_LEND: [20, 30]
+
+GASZIP:
+    NETWORKS_TO_REFUEL_FROM: ["Arbitrum", "Base", "Optimism"]
+    AMOUNT_TO_REFUEL: [0.0001, 0.00015]
+    MINIMUM_BALANCE_TO_REFUEL: 0.5
+    WAIT_FOR_FUNDS_TO_ARRIVE: true
+    MAX_WAIT_TIME: 999999
+
+SHMONAD:
+    BUY_AND_STAKE_SHMON: true
+    UNSTAKE_AND_SELL_SHMON: true
+
+    # percent of balance to swap on shmonad.xyz
+    PERCENT_OF_BALANCE_TO_SWAP: [2, 3]
+
+ACCOUNTABLE:
+    NFT_PER_ACCOUNT_LIMIT: 3
+
+ORBITER:
+    AMOUNT_TO_BRIDGE: [0.1, 0.2]
+    BRIDGE_ALL: false
+    WAIT_FOR_FUNDS_TO_ARRIVE: true
+    MAX_WAIT_TIME: 999999999
+
+LILCHOGSTARS:
+    MAX_AMOUNT_FOR_EACH_ACCOUNT: [1, 3]
+
+DEMASK:
+    MAX_AMOUNT_FOR_EACH_ACCOUNT: [1, 3]
+
+# monadking or monadking_unlocked
+MONADKING:
+    MAX_AMOUNT_FOR_EACH_ACCOUNT: [1, 3]
+
+
+MAGICEDEN:
+    NFT_CONTRACTS: [
+      "0x4269cde9751237634d972026583bd39dff10b6f8", # 0.01 $MON
+      "0xb3b63ea6ad288f74c1268a50640919fadae84454", # 0.01 $MON
+      "0xbf5340ac35c0653e4f30a52bca8de137bb717b56", # 0.001 $MON
+      "0x3941ae709a872cd14af1871c8442aa4cf0967e84", # 0.01 $MON
+      "0x0fa3da91d4469dfd8c7a0cb13c47d90c8e88d5bd", # free
+      "0x95d04e083255fe1b71d690791301831b6896d183", # free
+    ]
