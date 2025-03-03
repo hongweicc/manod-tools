@@ -73,6 +73,7 @@ class Start:
             task_plan_msg = []
             for i, task_item in enumerate(self.config.FLOW.TASKS, 1):
                 if isinstance(task_item, list):
+                    # 如果task配置了多个任务就会自动随机选择一个
                     selected_task = random.choice(task_item)
                     planned_tasks.append((i, selected_task))
                     task_plan_msg.append(f"{i}. {selected_task}")
@@ -103,7 +104,7 @@ class Start:
         """
         task_handlers = {
             "izumi": lambda: monad.swaps(type="izumi"),
-            # "logs": self._logs_task,
+            "logs": self._logs_task,
         }
 
         handler = task_handlers.get(task)
@@ -111,6 +112,17 @@ class Start:
             await handler()
         else:
             logger.warning(f"[{self.account_index}] Unknown task: {task}")
+
+    async def _logs_task(self):
+        """处理 'logs' 任务，记录钱包统计信息。"""
+        from src.model.help.stats import WalletStats
+        try:
+            wallet_stats = WalletStats(self.config)
+            await wallet_stats.get_wallet_stats(self.private_key, self.account_index)
+            logger.info(f"[{self.account_index}] Wallet statistics logged successfully")
+        except Exception as e:
+            logger.error(f"[{self.account_index}] Failed to log wallet statistics: {e}")
+            raise
 
     async def _sleep(self, task_name: str) -> None:
         """
