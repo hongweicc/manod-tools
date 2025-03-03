@@ -235,7 +235,7 @@ class MonadSwap:
             raise Exception("Transaction failed")
         return tx_hash.hex()
     
-    async def swap(self, percentage_to_swap: float, token_out: str) -> str:
+    async def swap(self, percentage_to_swap: float, token_out: str, type: str) -> str:
         """Swap tokens."""
         try:
             if token_out == "native":

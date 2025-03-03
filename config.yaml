@@ -96,7 +96,7 @@ FLOW:
     #         ["apriori", "magma", "kintsu", "shmonad"],
     #         "logs",
     #     ]
-    TASKS: ["izumi"]
+    TASKS: ["swaps"]
 
     # number of swaps. bean ambient monad etc
     NUMBER_OF_SWAPS: [1, 3]

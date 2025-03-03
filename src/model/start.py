@@ -105,6 +105,7 @@ class Start:
         task_handlers = {
             "izumi": lambda: monad.swaps(type="izumi"),
             "logs": self._logs_task,
+            "swaps": lambda: monad.swaps(type="swaps")
         }
 
         handler = task_handlers.get(task)

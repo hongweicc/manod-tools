@@ -6,6 +6,7 @@ import primp
 from typing import Optional
 
 from src.model.monad_xyz.izumi import IzumiDex
+from src.model.monad_xyz.uniswap_swaps import MonadSwap
 from src.utils.config import Config
 
 
@@ -68,9 +69,9 @@ class MonadXYZ:
             return False
 
     async def _uniswap_swaps(self) -> bool:
-        """处理 Uniswap 类型的交换。"""
+        """处理 UniSwap 类型的交换。"""
         number_of_swaps = random.randint(*self.config.FLOW.NUMBER_OF_SWAPS)
-        logger.info(f"[{self.account_index}] Will perform {number_of_swaps} Uniswap swaps")
+        logger.info(f"[{self.account_index}] Will perform {number_of_swaps} UniSwap swaps")
 
         for swap_num in range(number_of_swaps):
             success = await self._retry_swap(
