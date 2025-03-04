@@ -5,6 +5,8 @@ from eth_account import Account
 import primp
 from typing import Optional
 
+from src.model.monad_xyz.ambient import AmbientDex
+from src.model.monad_xyz.bean import BeanDex
 from src.model.monad_xyz.izumi import IzumiDex
 from src.model.monad_xyz.uniswap_swaps import MonadSwap
 from src.utils.config import Config
@@ -99,7 +101,7 @@ class MonadXYZ:
                 "Ambient",
                 swap_num + 1,
                 number_of_swaps,
-                swap_type="swap",
+                swap_type_param="swap",
                 )
             if not success:
                 return False
@@ -118,7 +120,7 @@ class MonadXYZ:
                 "Bean",
                 swap_num + 1,
                 number_of_swaps,
-                swap_type="swap",
+                swap_type_param="swap",
                 )
             if not success:
                 return False

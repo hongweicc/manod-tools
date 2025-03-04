@@ -104,6 +104,8 @@ class Start:
         """
         task_handlers = {
             "izumi": lambda: monad.swaps(type="izumi"),
+            "bean": lambda: monad.swaps(type="bean"),
+            "ambient": lambda: monad.swaps(type="ambient"),
             "logs": self._logs_task,
             "swaps": lambda: monad.swaps(type="swaps")
         }
