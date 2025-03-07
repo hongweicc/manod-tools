@@ -13,6 +13,7 @@ from eth_abi import abi
 from src.utils.config import Config
 import random
 
+
 class AmbientDex:
     def __init__(self, private_key: str, proxy: Optional[str] = None, config: Optional[Config] = None):
         """
@@ -178,60 +179,65 @@ class AmbientDex:
             logger.error(f"[{self.account.address}] Transaction execution failed: {e}")
             raise
 
-    async def swap(self, percentage_to_swap: float, type: str = "swap") -> Optional[str]:
+    async def swap(self, percentage_to_swap: float, type: str = "swap", token_out: Optional[str] = None) -> Optional[str]:
         """
         在 Ambient DEX 上执行代币交换。
 
         Args:
             percentage_to_swap: 交换的余额百分比（0-100）。
             type: 操作类型（"swap" 或 "collect"）。
+            token_out: 可选的目标代币符号。
 
         Returns:
             Optional[str]: 交易哈希或 "Collection complete"，失败时返回 None。
         """
-        try:
-            tokens_with_balance = await self.get_tokens_with_balance()
-            if not tokens_with_balance:
-                logger.info(f"[{self.account.address}] No tokens with sufficient balance")
-                return None
-
-            if type == "collect":
-                tokens_to_swap = [(t, b) for t, b in tokens_with_balance if t != "native"]
-                if not tokens_to_swap:
-                    logger.info(f"[{self.account.address}] No tokens to collect to native")
+        async with self:
+            try:
+                tokens_with_balance = await self.get_tokens_with_balance()
+                if not tokens_with_balance:
+                    logger.info(f"[{self.account.address}] No tokens with sufficient balance")
                     return None
 
-                for token_in, balance in tokens_to_swap:
-                    amount_wei = self.convert_to_wei(balance if token_in.lower() != "seth" else max(0, balance - random.uniform(0.00001, 0.0001)), token_in)
+                if type == "collect":
+                    tokens_to_swap = [(t, b) for t, b in tokens_with_balance if t != "native"]
+                    if not tokens_to_swap:
+                        logger.info(f"[{self.account.address}] No tokens to collect to native")
+                        return None
+
+                    for token_in, balance in tokens_to_swap:
+                        amount_wei = self.convert_to_wei(
+                            balance if token_in.lower() != "seth" else max(0, balance - random.uniform(0.00001, 0.0001)),
+                            token_in
+                        )
+                        await self.approve_token(token_in, amount_wei)
+                        pause = random.randint(self.config.SETTINGS.PAUSE_BETWEEN_SWAPS[0], self.config.SETTINGS.PAUSE_BETWEEN_SWAPS[1])
+                        logger.info(f"[{self.account.address}] Approved {token_in} for {self.convert_from_wei(amount_wei, token_in)}. Sleeping {pause}s")
+                        await asyncio.sleep(pause)
+                        tx_data = await self.generate_swap_data(token_in, "native", amount_wei)
+                        await self.execute_transaction(tx_data)
+                        if token_in != tokens_to_swap[-1][0]:
+                            await asyncio.sleep(random.randint(5, 10))
+                    logger.success(f"[{self.account.address}] Collection complete")
+                    return "Collection complete"
+
+                token_in, balance = random.choice(tokens_with_balance)
+                token_out = token_out or random.choice([t for t in list(AMBIENT_TOKENS.keys()) + ["native"] if t != token_in])
+                amount_wei = (
+                    int(self.convert_to_wei(balance, token_in) * Decimal(percentage_to_swap) / Decimal(100))
+                    if token_in == "native" else
+                    self.convert_to_wei(max(0, balance - (random.uniform(0.00001, 0.0001) if token_in.lower() == "seth" else 0)), token_in)
+                )
+                if token_in != "native":
                     await self.approve_token(token_in, amount_wei)
-                    pause = random.randint(self.config.SETTINGS.PAUSE_BETWEEN_SWAPS[0], self.config.SETTINGS.PAUSE_BETWEEN_SWAPS[1])
-                    logger.info(f"[{self.account.address}] Approved {token_in} for {self.convert_from_wei(amount_wei, token_in)}. Sleeping {pause}s")
-                    await asyncio.sleep(pause)
-                    tx_data = await self.generate_swap_data(token_in, "native", amount_wei)
-                    tx_hash = await self.execute_transaction(tx_data)
-                    if token_in != tokens_to_swap[-1][0]:
-                        await asyncio.sleep(random.randint(5, 10))
-                return "Collection complete"
+                    await asyncio.sleep(random.randint(5, 10))
 
-            token_in, balance = random.choice(tokens_with_balance)
-            available_out_tokens = [t for t in AMBIENT_TOKENS.keys() + ["native"] if t != token_in]
-            token_out = random.choice(available_out_tokens)
-            amount_wei = (
-                int(self.convert_to_wei(balance, token_in) * Decimal(percentage_to_swap) / Decimal(100))
-                if token_in == "native" else
-                self.convert_to_wei(max(0, balance - (random.uniform(0.00001, 0.0001) if token_in.lower() == "seth" else 0)), token_in)
-            )
-            if token_in != "native":
-                await self.approve_token(token_in, amount_wei)
-                await asyncio.sleep(random.randint(5, 10))
+                logger.info(f"[{self.account.address}] Swapping {self.convert_from_wei(amount_wei, token_in)} {token_in} to {token_out}")
+                tx_data = await self.generate_swap_data(token_in, token_out, amount_wei)
+                return await self.execute_transaction(tx_data)
 
-            logger.info(f"[{self.account.address}] Swapping {self.convert_from_wei(amount_wei, token_in)} {token_in} to {token_out}")
-            tx_data = await self.generate_swap_data(token_in, token_out, amount_wei)
-            return await self.execute_transaction(tx_data)
-
-        except ValueError as ve:
-            logger.error(f"[{self.account.address}] Swap failed due to invalid input: {ve}")
-            return None
-        except Exception as e:
-            logger.error(f"[{self.account.address}] Swap failed: {e}")
-            raise
+            except ValueError as ve:
+                logger.error(f"[{self.account.address}] Swap failed due to invalid input: {ve}")
+                return None
+            except Exception as e:
+                logger.error(f"[{self.account.address}] Swap failed: {e}")
+                raise
